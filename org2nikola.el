@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/org2nikola
 ;; Keywords: blog static html export org
-;; Version: 0.0.3
+;; Version: 0.0.4
 
 ;; This file is not part of GNU Emacs.
 
@@ -492,6 +492,7 @@
   (let (html-text)
     ;; (save-excursion
       (org-mark-subtree)
+      (forward-line) ;; donot export title
       ;; org-export-as will detect active region and narrow to the region
       (setq html-text (org-export-as 'html t nil t))
       ;; )
@@ -651,7 +652,8 @@ shamelessly copied from org2blog/wp-replace-pre()"
       ;; second round, <pre class="brush: javascript"]code[/pre] ...
       (setq html-text (org2nikola-replace-sourcecode html-text))
       ;; post content should not contain title
-      (setq html-text (replace-regexp-in-string "<h2  id=\"sec-1\">.*<\/h2>" "" html-text)))
+      (setq html-text (replace-regexp-in-string "<h2  id=\"sec-1\">.*<\/h2>" "" html-text))
+      (setq html-text (replace-regexp-in-string "<h3  id=\"sec-1\">.*<\/h3>" "" html-text)))
 
     (with-temp-file html-file
       (insert html-text))))
