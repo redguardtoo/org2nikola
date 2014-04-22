@@ -498,6 +498,7 @@
     ))
 
 (defun org2nikola-fix-unsupported-language (lang)
+
   (if (plist-get org2nikola-sourcecode-unsupported-language (intern lang))
       (setq lang (plist-get org2nikola-sourcecode-unsupported-language (intern lang))))
   lang)
@@ -581,7 +582,8 @@ shamelessly copied from org2blog/wp-replace-pre()"
                 (when (search-backward "[sourcecode]" nil t 1)
                   ;; Replace the text with our new header
                   (replace-match header nil t)))
-              (setq html (buffer-substring-no-properties (point-min) (point-max)))))))))
+              (setq html (buffer-substring-no-properties (point-min) (point-max)))))))
+      ))
   html)
 
 (defun org2nikola-format-time-string ()
@@ -641,10 +643,13 @@ shamelessly copied from org2blog/wp-replace-pre()"
 
     (when org2nikola-use-js-source-highlighter
       ;; first round, [sourcecode language="javascript"]code[/sourcecode] ...
-      (setq html-text (org2nikola-replace-pre html-text))
+      (save-excursion
+        (org-mark-subtree)
+        (narrow-to-region (region-beginning) (region-end))
+        (setq html-text (org2nikola-replace-pre html-text))
+        (widen))
       ;; second round, <pre class="brush: javascript"]code[/pre] ...
-      (setq html-text (org2nikola-replace-sourcecode html-text))
-      )
+      (setq html-text (org2nikola-replace-sourcecode html-text)))
 
     (with-temp-file html-file
       (insert html-text))))
