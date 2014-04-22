@@ -1,4 +1,4 @@
-* org2nikola (version 0.0.1)
+* org2nikola (version 0.0.2)
 export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
