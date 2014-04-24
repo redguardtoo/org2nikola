@@ -1,4 +1,4 @@
-* org2nikola (version 0.0.4)
+* org2nikola (version 0.0.5)
 export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
@@ -9,7 +9,6 @@ Bugs:
 - local image href is not supported yet!
 
 * Install
-
 Download org2nikola.el and put it some where, say "~/.emacs.d/lisp".
 
 The paste below code into ~/.emacs:
@@ -18,19 +17,21 @@ The paste below code into ~/.emacs:
 (require 'org2nikola)
 #+END_SRC
 
-* Set up
+* Set up (OPTIONAL)
 Paste below code into your .emacs:
 #+BEGIN_SRC elisp
-(setq org2nikola-output-directory "~/projs/blog.binchen.org/posts")
+(setq org2nikola-output-root-directory "~/projs/blog.binchen.org")
+;; use google code prettify (https://code.google.com/p/google-code-prettify/)
+(setq org2nikola-use-google-code-prettify t)
 #+END_SRC
 
 * Usage
 Say I got a org-file with following content:
 #+BEGIN_SRC org
-* article 1
-blah
-* article 2
-blah
+ * article 1
+   blah
+ * article 2
+   blah
 blah
 #+END_SRC
 

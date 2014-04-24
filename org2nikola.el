@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/org2nikola
 ;; Keywords: blog static html export org
-;; Version: 0.0.4
+;; Version: 0.0.5
 
 ;; This file is not part of GNU Emacs.
 
@@ -16,16 +16,14 @@
 ;;; Code:
 (require 'org)
 
-(defvar org2nikola-output-directory "~/projs/blog.binchen.org/posts")
+(defvar org2nikola-output-root-directory nil)
 
-(defvar org2nikola-use-js-source-highlighter t)
-(defvar org2nikola-sourcecode-begin-html-tag-regex "<pre class='brush: \\1'>")
-(defvar org2nikola-sourcecode-end-html-tag-regex "<\/pre>")
-(defvar org2nikola-sourcecode-unsupported-language
-  '(elisp "scala"
-          emacs-lisp "scala"
-          c++ "cpp"
-          clojure "scala"))
+(defvar org2nikola-use-google-code-prettify nil)
+
+(defvar org2nikola-prettify-unsupported-language
+  '(elisp "lisp"
+          emacs-lisp "lisp"
+          ))
 
 (defconst org2nikola-zh-char-table
   '(
@@ -480,44 +478,112 @@
     ))
 
 (defun org2nikola-get-slug (str)
-  (setq slug (mapconcat 'org2nikola--char-to-string str ""))
-  ;; clean slug a little bit
-  (setq slug (replace-regexp-in-string "\-\-+" "-" slug))
-  (setq slug (replace-regexp-in-string "^\-+" "" slug))
-  (setq slug (replace-regexp-in-string "\-+$" "" slug))
-  (setq slug (downcase slug))
-  slug)
+  (let (slug )
+    (setq slug (mapconcat 'org2nikola--char-to-string str ""))
+    ;; clean slug a little bit
+    (setq slug (replace-regexp-in-string "\-\-+" "-" slug))
+    (setq slug (replace-regexp-in-string "^\-+" "" slug))
+    (setq slug (replace-regexp-in-string "\-+$" "" slug))
+    (setq slug (downcase slug))
+    slug))
 
 (defun org2nikola-export-into-html-text ()
-  (let (html-text)
-    ;; (save-excursion
-      (org-mark-subtree)
+  (let (html-text b e)
+
+    (save-excursion
+      (org-mark-element)
       (forward-line) ;; donot export title
-      ;; org-export-as will detect active region and narrow to the region
-      (setq html-text (org-export-as 'html t nil t))
-      ;; )
-    ))
+      (setq b (region-beginning))
+      (setq e (region-end))
+      )
+    ;; org-export-as will detect active region and narrow to the region
+    (save-excursion
+      (setq html-text
+            (if (version-list-< (version-to-list (org-version)) '(8 0 0))
+                (org-export-region-as-html
+                 b e
+                 t 'string)
+              (org-export-as 'html t nil t))))
+    html-text))
 
 (defun org2nikola-fix-unsupported-language (lang)
-
-  (if (plist-get org2nikola-sourcecode-unsupported-language (intern lang))
-      (setq lang (plist-get org2nikola-sourcecode-unsupported-language (intern lang))))
+  (if (plist-get org2nikola-prettify-unsupported-language (intern lang))
+      (setq lang (plist-get org2nikola-prettify-unsupported-language (intern lang))))
   lang)
 
-(defun org2nikola-replace-sourcecode (html)
+(defun org2nikola-guess-output-html-directory ()
+  (let (rlt)
+    (setq rlt (concat (file-name-as-directory org2nikola-output-root-directory) "posts"))
+    (if (not (file-exists-p (expand-file-name rlt)))
+        (make-directory (expand-file-name rlt)))
+    (file-name-as-directory rlt)
+    ))
 
-  (setq html (replace-regexp-in-string "\\[sourcecode language=\"\\([a-z]+\\)\".*\\]"
-                                       org2nikola-sourcecode-begin-html-tag-regex html))
+(defun org2nikola-guess-output-image-directory ()
+  (let (rlt)
+    (setq rlt (concat (file-name-as-directory org2nikola-output-root-directory) "files/wp-content"))
+    (if (not (file-exists-p (expand-file-name rlt)))
+        (make-directory (expand-file-name rlt)))
+    (file-name-as-directory rlt)
+    ))
 
-  (setq html (replace-regexp-in-string "\\[\/sourcecode\\]"
-                                       org2nikola-sourcecode-end-html-tag-regex html))
-  html)
+(defun org2nikola-get-full-url (local-file org-directory)
+  (let (final-url source-file-full-path dst-file-full-path)
+    (setq source-file-full-path (file-truename (concat org-directory local-file)))
+    (setq dst-file-full-path (concat
+                              (org2nikola-guess-output-image-directory)
+                              (file-name-nondirectory source-file-full-path)
+                              ))
+    (copy-file source-file-full-path dst-file-full-path t)
+    (setq final-url (concat "/wp-content/" (file-name-nondirectory local-file)))
+    final-url
+    ))
+
+;; TODO, all we need is set a flag to upload or not upload image again
+;; Seriously, I don't care individual image status.
+(defun org2nikola-replace-urls (text org-directory)
+  "Uploads files, if any in the html, and changes their links"
+
+  (let ((file-all-urls nil)
+        file-name file-web-url beg
+        (file-regexp "<a href=\"\\(.?*\\)\"\\|<img src=\"\\(.*?\\)\""))
+    (save-excursion
+      (while (string-match file-regexp text beg)
+        (setq file-name
+              (if (match-beginning 1)
+                  (substring text (match-beginning 1) (match-end 1))
+                (substring text (match-beginning 2) (match-end 2))))
+        (setq file-name (save-match-data (if (string-match "^file:" file-name)
+                                             (substring file-name 7)
+                                           file-name)))
+        (setq beg (match-end 0))
+        (if (save-match-data (not (or
+                                   (string-match org-plain-link-re file-name)
+                                   (string-match "^#" file-name)
+                                   (string-equal (file-name-nondirectory file-name) ""))))
+
+            (progn
+              (setq file-web-url (org2nikola-get-full-url file-name org-directory))
+              (setq file-all-urls
+                    (append file-all-urls (list (cons
+                                                 file-name file-web-url))))
+              ))
+        )
+      ;; replace urls in file-all-urls
+      (dolist (file file-all-urls)
+        (setq text (replace-regexp-in-string
+                    (concat "\\(<a href=\"\\|<img src=\"\\)\\(file://\\)*"
+                            (regexp-quote (car file))
+                            "\\(\" +alt=\"\\).*$"
+                            )
+                    (concat "\\1" (cdr file) "\\3" (file-name-nondirectory (cdr file)) "\" />") text))))
+    text))
 
 (defun org2nikola-replace-pre (html)
   "Replace pre blocks with sourcecode shortcode blocks.
 shamelessly copied from org2blog/wp-replace-pre()"
   (save-excursion
-    (let (pos code lang info params header code-start code-end html-attrs)
+    (let (pos code lang info params header code-start code-end html-attrs pre-class)
       (with-temp-buffer
         (insert html)
         (goto-char (point-min))
@@ -527,8 +593,11 @@ shamelessly copied from org2blog/wp-replace-pre()"
             ;; When the codeblock is a src_block
             (unless
                 (save-match-data
-                  (string-match "example" (match-string-no-properties 1)))
+                  (setq pre-class (match-string-no-properties 1))
+                  (string-match "example" pre-class))
               ;; Replace the <pre...> text
+              (setq lang (replace-regexp-in-string ".*src-\\([a-zA-Z0-9]+\\).*" "\\1" pre-class)  )
+
               (replace-match "")
               (setq code-start (point))
 
@@ -542,48 +611,16 @@ shamelessly copied from org2blog/wp-replace-pre()"
               (delete-region code-start code-end)
               ;; Stripping out all the code highlighting done by htmlize
               (setq code (replace-regexp-in-string "<.*?>" "" code))
-              (insert (concat "\n[sourcecode]\n" code "[/sourcecode]\n")))))
+              ;; class linenums will add stripes which will destory the 3rd party skins
+              (insert (concat "\n<pre class=\"prettyprint lang-"
+                              (org2nikola-fix-unsupported-language lang)
+                              "\">\n"
+                              code
+                              "</pre>\n"))
+              )))
 
         ;; Get the new html!
         (setq html (buffer-substring-no-properties (point-min) (point-max))))
-
-      (setq pos (point-min))
-      (goto-char (point-min))
-      (while
-          ;; Search for code blocks in the buffer from where publish
-          ;; was done, and get the syntaxhl params if any, and put
-          ;; them in the right place in the html, using a temp-buffer.
-          (save-match-data
-            (re-search-forward org-babel-src-block-regexp nil t 1))
-        (backward-word)
-        ;; Get the syntaxhl params and other info about the src_block
-        (let* ((info (org-babel-get-src-block-info))
-               (params (nth 2 info))
-               (code (if (version-list-< (version-to-list (org-version)) '(8 0 0))
-                         (org-html-protect (nth 1 info))
-                       (org-html-encode-plain-text (nth 1 info))))
-               (lang (nth 0 info)) ;; let the third party render to worry which language to support
-               (header (concat "[sourcecode language=\""
-                               (org2nikola-fix-unsupported-language lang)
-                               "\" "
-                               "light=\"true\" "
-                               "]")))
-
-          ;; Change the html by inserting the syntaxhl in the right place.
-          (save-excursion
-            (with-temp-buffer
-              (insert html)
-              (goto-char pos)
-              ;; Search for code
-              (save-match-data
-                (search-forward code nil t 1)
-                (setq pos (match-end 0))
-                (goto-char (match-beginning 0))
-                ;; Search for a header line --
-                (when (search-backward "[sourcecode]" nil t 1)
-                  ;; Replace the text with our new header
-                  (replace-match header nil t)))
-              (setq html (buffer-substring-no-properties (point-min) (point-max)))))))
       ))
   html)
 
@@ -595,7 +632,8 @@ shamelessly copied from org2blog/wp-replace-pre()"
 (defun org2nikola-export-subtree ()
   "export current first level subtree into html located at Nikola's directory"
   (interactive)
-  (let (html-file
+  (let ((org-directory default-directory)
+        html-file
         meta-file
         tags
         title
@@ -603,6 +641,8 @@ shamelessly copied from org2blog/wp-replace-pre()"
         post-date
         update-date
         html-text)
+
+    (outline-up-heading 8)
     ;; just goto the root element
     (condition-case nil
         (outline-up-heading 8)
@@ -627,10 +667,12 @@ shamelessly copied from org2blog/wp-replace-pre()"
       (setq post-slug (org2nikola-get-slug title))
       (org-entry-put (point) "POST_SLUG" post-slug))
 
-    ;; TODO, images
+    ;; nikola root directory must exist
+    (unless (and org2nikola-output-root-directory (file-directory-p org2nikola-output-root-directory))
+      (setq org2nikola-output-root-directory (read-directory-name "Nikola root directory:")))
 
-    ;; meta
-    (setq meta-file (concat (file-name-as-directory org2nikola-output-directory) post-slug ".meta"))
+    ;; meta file
+    (setq meta-file (concat (file-name-as-directory (org2nikola-guess-output-html-directory)) post-slug ".meta"))
     (with-temp-file meta-file
       (insert (concat title "\n"
                       post-slug "\n"
@@ -639,23 +681,21 @@ shamelessly copied from org2blog/wp-replace-pre()"
                       )))
 
     ;; html file
-    (setq html-file (concat (file-name-as-directory org2nikola-output-directory) post-slug ".wp"))
+    (setq html-file (concat (file-name-as-directory (org2nikola-guess-output-html-directory)) post-slug ".wp"))
     (setq html-text (org2nikola-export-into-html-text))
 
-    (when org2nikola-use-js-source-highlighter
-      ;; first round, [sourcecode language="javascript"]code[/sourcecode] ...
+    (when org2nikola-use-google-code-prettify
       (save-excursion
-        (org-mark-subtree)
-        (narrow-to-region (region-beginning) (region-end))
         (setq html-text (org2nikola-replace-pre html-text))
-        (widen))
-      ;; second round, <pre class="brush: javascript"]code[/pre] ...
-      (setq html-text (org2nikola-replace-sourcecode html-text))
-      ;; post content should not contain title
-      (setq html-text (replace-regexp-in-string "<h2  id=\"sec-1\">.*<\/h2>" "" html-text))
-      (setq html-text (replace-regexp-in-string "<h3  id=\"sec-1\">.*<\/h3>" "" html-text)))
+        ))
+
+    ;; post content should not contain title
+    (setq html-text (replace-regexp-in-string "<h2  id=\"sec-1\">.*<\/h2>" "" html-text))
+    (setq html-text (replace-regexp-in-string "<h3  id=\"sec-1\">.*<\/h3>" "" html-text))
+    (setq html-text (org2nikola-replace-urls html-text org-directory))
 
     (with-temp-file html-file
-      (insert html-text))))
+      (insert html-text))
+    ))
 
 (provide 'org2nikola)
