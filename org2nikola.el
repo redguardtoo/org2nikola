@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/org2nikola
 ;; Keywords: blog static html export org
-;; Version: 0.0.5
+;; Version: 0.0.6
 
 ;; This file is not part of GNU Emacs.
 
@@ -499,11 +499,14 @@
     ;; org-export-as will detect active region and narrow to the region
     (save-excursion
       (setq html-text
-            (if (version-list-< (version-to-list (org-version)) '(8 0 0))
-                (org-export-region-as-html
-                 b e
-                 t 'string)
-              (org-export-as 'html t nil t))))
+            (cond
+             ((version-list-< (version-to-list (org-version)) '(8 0 0))
+              (if (fboundp 'org-export-region-as-html)
+                  (org-export-region-as-html b e t 'string)))
+             (t
+              (if (fboundp 'org-export-as)
+                  (org-export-as 'html t nil t)))
+             )))
     html-text))
 
 (defun org2nikola-fix-unsupported-language (lang)
@@ -642,7 +645,6 @@ shamelessly copied from org2blog/wp-replace-pre()"
         update-date
         html-text)
 
-    (outline-up-heading 8)
     ;; just goto the root element
     (condition-case nil
         (outline-up-heading 8)
