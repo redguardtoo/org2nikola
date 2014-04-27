@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/org2nikola
 ;; Keywords: blog static html export org
-;; Version: 0.0.6
+;; Version: 0.0.7
 
 ;; This file is not part of GNU Emacs.
 
@@ -456,6 +456,7 @@
         (chz 122)
         (chA 65)
         (chZ 90)
+        (chdot 46)
         (chminus 45)
         (chunderscore 95)
         (cjk-min 19968)
@@ -472,7 +473,7 @@
      ((and (<= cjk-min ch) (<= ch cjk-max))
       (setq rlt (concat "-" (org2nikola--zh-char-to-pinyin ch) "-"))
       )
-     ((or (= chspc ch) (= chsq ch))
+     ((or (= chspc ch) (= chsq ch) (= chdot ch))
       (setq rlt "-")))
     rlt
     ))
