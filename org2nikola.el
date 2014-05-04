@@ -4,7 +4,7 @@
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/org2nikola
 ;; Keywords: blog static html export org
-;; Version: 0.0.7
+;; Version: 0.0.8
 
 ;; This file is not part of GNU Emacs.
 
@@ -478,6 +478,9 @@
     rlt
     ))
 
+(defun org2nikola-trim-string (string)
+  (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string)))
+
 (defun org2nikola-get-slug (str)
   (let (slug )
     (setq slug (mapconcat 'org2nikola--char-to-string str ""))
@@ -485,6 +488,7 @@
     (setq slug (replace-regexp-in-string "\-\-+" "-" slug))
     (setq slug (replace-regexp-in-string "^\-+" "" slug))
     (setq slug (replace-regexp-in-string "\-+$" "" slug))
+    (setq slug (org2nikola-trim-string slug))
     (setq slug (downcase slug))
     slug))
 
