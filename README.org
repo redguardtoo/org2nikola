@@ -1,4 +1,4 @@
-* org2nikola (version 0.0.8)
+* org2nikola (version 0.0.9)
 export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
@@ -9,11 +9,11 @@ Bugs:
 - local image href is not supported yet!
 
 * Install
-Download org2nikola.el and put it some where, say "~/.emacs.d/lisp".
+Download org2nikola.el and put it somewhere, say "~/.emacs.d/lisp/nikola".
 
 The paste below code into ~/.emacs:
 #+BEGIN_SRC
-(add-to-list 'load-path "~/.emacs.d/lisp/")
+(add-to-list 'load-path "~/.emacs.d/lisp/nikola")
 (require 'org2nikola)
 #+END_SRC
 
@@ -35,7 +35,15 @@ Say I got a org-file with following content:
 blah
 #+END_SRC
 
-Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree". That's the only command I implemented.
+Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree". That's it.
+
+You may need get more information after HTML filesa are created:
+#+begin_src elisp
+(add-hook 'org2nikola-after-hook
+          (lambda (title slug)
+            (message "title=%s slug=%s" title slug)))
+#+end_src
+
 
 * Credits
 - [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]] I borrow lots of ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
