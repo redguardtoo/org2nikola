@@ -1,5 +1,5 @@
 #!/bin/bash
-pkg=org2nikola-0.0.9
+pkg=org2nikola-0.1.0
 mkdir $pkg
 cp README.org $pkg
 cp *.el $pkg

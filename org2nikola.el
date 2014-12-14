@@ -1,10 +1,10 @@
-;;; org2nikola --- export html and meta data used by static blog like nikola from org file
+;;; org2nikola --- create HTML for static blog generator Nikola from Org
 
 ;; Copyright (C) 2012 Chen Bin
 ;; Author: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://github.com/redguardtoo/org2nikola
 ;; Keywords: blog static html export org
-;; Version: 0.0.9
+;; Version: 0.1.0
 
 ;; This file is not part of GNU Emacs.
 
@@ -14,15 +14,15 @@
 ;;
 ;; (add-to-list 'load-path "~/.emacs.d/lisp/nikola")
 ;; (require 'org2nikola)
-;; (setq org2nikola-output-root-directory "~/projs/blog.binchen.org")
-;; ;; OPTIONAL
-;; (add-hook 'org2nikola-after-hook
-;;           (lambda (title slug)
-;;             (message "title=%s slug=%s" title slug)))
+;; (setq org2nikola-output-root-directory "~/.config/nikola")
+;;
 
 ;;; Usage:
 ;;
-;;  M-x org2nikola-export-subtree
+;;  `M-x org2nikola-export-subtree` to create HTML files.
+;;
+;;  Check https://github.com/redguardtoo/org2nikola for tips on
+;;  how to use git or FTP to upload HTML files.
 
 ;;; Code:
 (require 'org)

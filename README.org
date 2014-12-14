@@ -1,13 +1,13 @@
-* org2nikola (version 0.0.9)
+* org2nikola (v0.1.0)
 export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
 - URL is normalized into pinyin characters if the article is written in Chinese
-- Support 3rd party syntax highligher which is written in javascript
+- Support 3rd party syntax highlighter which is written in javascript
 
 Bugs:
 - local image href is not supported yet!
-
+  
 * Install
 Download org2nikola.el and put it somewhere, say "~/.emacs.d/lisp/nikola".
 
@@ -20,12 +20,13 @@ The paste below code into ~/.emacs:
 * Set up (OPTIONAL)
 Paste below code into your .emacs:
 #+BEGIN_SRC elisp
-(setq org2nikola-output-root-directory "~/projs/blog.binchen.org")
+(setq org2nikola-output-root-directory "~/.config/nikola")
 ;; use google code prettify (https://code.google.com/p/google-code-prettify/)
 (setq org2nikola-use-google-code-prettify t)
 #+END_SRC
 
 * Usage
+** Render HTML
 Say I got a org-file with following content:
 #+BEGIN_SRC org
  * article 1
@@ -37,14 +38,66 @@ blah
 
 Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree". That's it.
 
-You may need get more information after HTML filesa are created:
+The new HTML files will be placed in "~/.config/nikola"
+** Upload HTML (OPTIONAL)
+You can always upload HTML files *manually* to the web server. But org2nikola provide `org2nikola-after-hook` for automation.
+*** Github Pages
+Here is the sample setup:
 #+begin_src elisp
-(add-hook 'org2nikola-after-hook
-          (lambda (title slug)
-            (message "title=%s slug=%s" title slug)))
+(defun org2nikola-after-hook-setup (title slug)
+  "see https://help.github.com/articles/setting-up-a-custom-domain-with-github-pages/ for setup
+ run `ln -s ~/projs/redguardtoo.github.io ~/.config/nikola/output`, btw"
+  (let ((url (concat "http://blog.binchen.org/posts/" slug ".html"))
+        (nikola-dir (file-truename "~/.config/nikola"))
+        cmd)
+    ;; copy the blog url into kill-ring
+    (kill-new url)
+    (message "%s => kill-ring" url)
+    ;; nikola is building posts ...
+    (shell-command (format "cd %s; nikola build" nikola-dir))
+    (setq cmd "cd ~/projs/redguardtoo.github.io;git add .;git commit -m 'updated';git push origin master;git push gitcafe gitcafe-pages:refs/heads/master")
+    (shell-command cmd)
+    ))
+
+(add-hook 'org2nikola-after-hook 'org2nikola-after-hook-setup)
 #+end_src
 
+Please note:
+- My user name at github is "redguardtoo" and my blog domain is "blog.binchen.org". You need replace them with your own stuff.
+- Gitcafe is a different company. I use it as the backup. You can remove gitcafe stuff.
+*** FTP
+Here is the setup:
+#+begin_src elisp
+(defun org2nikola-after-hook-setup (title slug)
+  (let ((url (concat "http://blog.yourdomain.net/posts/" slug ".html"))
+        (nikola-dir (file-truename "~/.config/nikola"))
+        (password "yourpassowrd")
+        (username "yourusername")
+        dir
+        file
+        lines
+        rlt
+        res
+        cmd)
+    (kill-new url)
+    (message "%s => kill-ring" url)
+    (setq rlt (shell-command-to-string (format "cd %s; nikola build" nikola-dir)))
+    (setq lines (split-string rlt "\n"))
+    (dolist (l lines)
+      (when (string-match "output\\(.*/\\)*\\([^/]*\\)$" l)
+        (setq dir (match-string 1 l))
+        (setq file (match-string 2 l))
+        (setq cmd (format "ncftpput -b -u %s -p %s ftp.yourdomain.net /blog%s %s/output%s%s"
+                          username password dir nikola-dir dir file))
+        (shell-command cmd)
+        ))
+    ))
 
+(add-hook 'org2nikola-after-hook 'org2nikola-after-hook-setup)
+#+end_src
+
+You need install [[http://www.ncftp.com/][ncftp]] which is the FTP client. See [[http://blog.binchen.org/posts/how-to-publish-static-html-blog-in-emacs-as-a-programmer.html][How a programmer publish static HTML blog in Emacs]] for details.
+    
 * Credits
 - [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]] I borrow lots of ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
 
