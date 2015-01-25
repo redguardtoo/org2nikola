@@ -1,10 +1,15 @@
-* org2nikola (v0.1.1)
-export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
+* org2nikola (v0.1.2)
+Export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
 - URL is normalized into pinyin characters if the article is written in Chinese
 - Support 3rd party syntax highlighter which is written in javascript
 - local image IS supported
+
+[[http://blog.binchen.org/posts/how-to-validate-html5-code-with-flymake-effectively.html][This is the live demo]].
+
+Screenshot:
+[[https://raw.githubusercontent.com/redguardtoo/org2nikola/master/screenshots/org2nikola-demo-nq8.png]]
   
 * Install
 Download org2nikola.el and put it somewhere, say "~/.emacs.d/lisp/nikola".
@@ -37,7 +42,7 @@ Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree
 
 The new HTML files will be placed in "~/.config/nikola"
 ** Upload HTML (OPTIONAL)
-You can always upload HTML files *manually* to the web server. But org2nikola provide `org2nikola-after-hook` for automation.
+You can always upload HTML files *manually* to the web server. Org2nikola provides `org2nikola-after-hook` for automation.
 *** Github Pages
 Here is the sample setup:
 #+begin_src elisp
@@ -61,7 +66,7 @@ Here is the sample setup:
 
 Please note:
 - My user name at github is "redguardtoo" and my blog domain is "blog.binchen.org". You need replace them with your own stuff.
-- Gitcafe is a different company. I use it as the backup. You can remove gitcafe stuff.
+- Gitcafe is a different repository as the backup. You can remove it.
 *** FTP
 Here is the setup:
 #+begin_src elisp
@@ -100,13 +105,13 @@ You need install [[http://www.ncftp.com/][ncftp]] which is the FTP client. See [
 
 Then provide the directory containing org files if it's not set in `org2nikola-org-blog-directory`.
 
+* Nikola setup
+Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py][conf.py]]. [[http://www.google.com.au/analytics/][Google Analytics]] and [[https://highlightjs.org/][hightlight.js (sytnax highlight JS library)]] is used.
 * Credits
 - [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]] I borrow lots of ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
 
-* Contact me
-You can report bugs at [[https://github.com/redguardtoo/org2nikola]] My email is <chenbin DOT sh AT gmail>.
-
-Please use github issue tracker instead of email me directly if you want my response ASAP. It's because github will email me any issue you submit. The github email will be put into my "IMPORTANT" folder automatically. But regular email in my "INBOX" folder will be mixed with spams. I got lots of spams these days.
+* Bug report
+[[https://github.com/redguardtoo/org2nikola]]
 
 * License
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
