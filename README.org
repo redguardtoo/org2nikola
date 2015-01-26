@@ -14,7 +14,7 @@ Screenshot:
 * Install
 Download org2nikola.el and put it somewhere, say "~/.emacs.d/lisp/nikola".
 
-The paste below code into ~/.emacs:
+Then paste below code into ~/.emacs:
 #+BEGIN_SRC
 (add-to-list 'load-path "~/.emacs.d/lisp/nikola")
 (require 'org2nikola)
