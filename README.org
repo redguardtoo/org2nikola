@@ -1,12 +1,12 @@
 * org2nikola (v0.1.2)
-Export org into html used by static blog generator like [[https://github.com/getnikola/nikola][nikola]].
+Export org into HTML used by static blog generator [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
-- URL is normalized into pinyin characters if the article is written in Chinese
-- Support 3rd party syntax highlighter which is written in javascript
+- URL is normalized into pinyin for Chinese article
+- Support 3rd party syntax highlighter JS library
 - local image IS supported
 
-[[http://blog.binchen.org/posts/how-to-validate-html5-code-with-flymake-effectively.html][This is the live demo]].
+[[http://blog.binchen.org/posts/how-to-validate-html5-code-with-flymake-effectively.html][Live demo]].
 
 Screenshot:
 [[https://raw.githubusercontent.com/redguardtoo/org2nikola/master/screenshots/org2nikola-demo-nq8.png]]
@@ -14,23 +14,21 @@ Screenshot:
 * Install
 Download org2nikola.el and put it somewhere, say "~/.emacs.d/lisp/nikola".
 
-Then paste below code into ~/.emacs:
+Insert below code into ~/.emacs:
 #+BEGIN_SRC
 (add-to-list 'load-path "~/.emacs.d/lisp/nikola")
 (require 'org2nikola)
 #+END_SRC
 
-* Set up (OPTIONAL)
-Paste below code into your .emacs:
+* Setup (OPTIONAL)
+Insert below code into your .emacs:
 #+BEGIN_SRC elisp
 (setq org2nikola-output-root-directory "~/.config/nikola")
-;; use google code prettify (https://code.google.com/p/google-code-prettify/)
-(setq org2nikola-use-google-code-prettify t)
 #+END_SRC
 
 * Usage
 ** Render HTML
-Say I got a org-file with following content:
+Say I got a org file with following content:
 #+BEGIN_SRC org
  * article 1
    blah
@@ -40,7 +38,7 @@ Say I got a org-file with following content:
 
 Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree". That's it.
 
-The new HTML files will be placed in "~/.config/nikola"
+Org2nikola output files in "~/.config/nikola". You need run "cd ~/.config/nikola;nikola build" to render final website.
 ** Upload HTML (OPTIONAL)
 You can always upload HTML files *manually* to the web server. Org2nikola provides `org2nikola-after-hook` for automation.
 *** Github Pages
@@ -107,6 +105,9 @@ Then provide the directory containing org files if it's not set in `org2nikola-o
 
 * Nikola setup
 Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py][conf.py]]. [[http://www.google.com.au/analytics/][Google Analytics]] and [[https://highlightjs.org/][hightlight.js (sytnax highlight JS library)]] is used.
+
+If you are a newbie of Nikola or you need import post from wordpress, check [[http://blog.binchen.org/posts/migrate-blog-from-wordpress-into-nikola.html][this guide]].
+
 * Credits
 - [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]] I borrow lots of ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
 
