@@ -39,6 +39,8 @@ Say I got a org file with following content:
 Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree". That's it.
 
 Org2nikola output files in "~/.config/nikola". You need run "cd ~/.config/nikola;nikola build" to render final website.
+
+Please note this command only creates HTML file for current org node. You may need "M-x org2nikola-rerender-published-posts" at least once to re-create HTML files for old posts before "nikola build".
 ** Upload HTML (OPTIONAL)
 You can always upload HTML files *manually* to the web server. Org2nikola provides `org2nikola-after-hook` for automation.
 *** Github Pages
