@@ -1,4 +1,4 @@
-* org2nikola (v0.1.3)
+* org2nikola (v0.1.4)
 Export org into HTML used by static blog generator [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
@@ -110,6 +110,7 @@ Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py
 
 If you are a newbie of Nikola or you need import post from wordpress, check [[http://blog.binchen.org/posts/migrate-blog-from-wordpress-into-nikola.html][this guide]].
 
+You may `(setq org2nikola-use-verbose-metadata t)` because more verbose meta data format is suggested by nikola 7.7+.
 * Credits
 - [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]] I borrow lots of ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
 
