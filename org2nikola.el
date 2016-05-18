@@ -26,6 +26,11 @@
 ;; You may `M-x org2nikola-rerender-published-posts' at least once
 ;; if you haven't published all post on one computer.
 ;;
+;; Press `C-c C-c' or `M-x org-ctrl-c-ctrl-c' to tag the post.
+;;
+;; You can `(setq org2nikola-use-verbose-metadata t)' because nikola7.7
+;; requires more verbose meta data.
+;;
 ;;  Check https://github.com/redguardtoo/org2nikola for tips on
 ;;  how to use git or FTP to upload HTML files.
 

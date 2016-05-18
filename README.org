@@ -18,14 +18,10 @@ Insert below code into ~/.emacs:
 #+BEGIN_SRC
 (add-to-list 'load-path "~/.emacs.d/lisp/nikola")
 (require 'org2nikola)
-#+END_SRC
-
-* Setup (OPTIONAL)
-Insert below code into your .emacs:
-#+BEGIN_SRC elisp
+;; OPTIONAL, set the root directory of nikola
+;; "~/.config/nikola/posts" contains the *.meta and *.wp
 (setq org2nikola-output-root-directory "~/.config/nikola")
 #+END_SRC
-
 * Usage
 ** Render HTML
 Say I got a org file with following content:
@@ -36,11 +32,11 @@ Say I got a org file with following content:
    blah blah
 #+END_SRC
 
-Put focus in anywhere of subtree "article 2", the "M-x org2nikola-export-subtree". That's it.
+Put focus in anywhere of subtree "article 2" and =M-x org2nikola-export-subtree=. That's it.
 
-Org2nikola output files in "~/.config/nikola". You need run "cd ~/.config/nikola;nikola build" to render final website.
+Org2nikola output files into "~/.config/nikola". You need run =cd ~/.config/nikola;nikola build= to render website.
 
-Please note this command only creates HTML file for current org node. You may need "M-x org2nikola-rerender-published-posts" at least once to re-create HTML files for old posts before "nikola build".
+Please note =M-x org2nikola-export-subtree=only creates HTML file for current node. You may need =M-x org2nikola-rerender-published-posts= at least once to re-create HTML files for old posts before "nikola build".
 ** Upload HTML (OPTIONAL)
 You can always upload HTML files *manually* to the web server. Org2nikola provides `org2nikola-after-hook` for automation.
 *** Github Pages
@@ -100,10 +96,12 @@ Here is the setup:
 
 You need install [[http://www.ncftp.com/][ncftp]] which is the FTP client. See [[http://blog.binchen.org/posts/how-to-publish-static-html-blog-in-emacs-as-a-programmer.html][How a programmer publish static HTML blog in Emacs]] for details.
     
+** Tag the post
+It's standard org-mode feature. Press =C-c C-c= or =M-x org-ctrl-c-ctrl-c=.
 ** Re-render all published posts
 `M-x org2nikola-rerender-published-posts`.
 
-Then provide the directory containing org files if it's not set in `org2nikola-org-blog-directory`.
+Please provide the directory containing org files if it's not set in `org2nikola-org-blog-directory`.
 
 * Nikola setup
 Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py][conf.py]]. [[http://www.google.com.au/analytics/][Google Analytics]] and [[https://highlightjs.org/][hightlight.js (sytnax highlight JS library)]] is used.
