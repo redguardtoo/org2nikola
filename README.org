@@ -2,11 +2,11 @@
 Export org into HTML used by static blog generator [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
-- URL is normalized into pinyin for Chinese article
-- Support 3rd party syntax highlighter JS library
-- local image IS supported
+- URL is normalized into pinyin if article title is Chinese
+- Support 3rd party syntax highlighter JS library like [[https://highlightjs.org/][highlight.js]]
+- local image supported
 
-[[http://blog.binchen.org/posts/how-to-validate-html5-code-with-flymake-effectively.html][Live demo]].
+[[http://blog.binchen.org/posts/how-to-validate-html5-code-with-flymake-effectively.html][Here is my blog created by org2nikola]].
 
 Screenshot:
 [[https://raw.githubusercontent.com/redguardtoo/org2nikola/master/screenshots/org2nikola-demo-nq8.png]]
@@ -32,14 +32,14 @@ Say I got a org file with following content:
    blah blah
 #+END_SRC
 
-Put focus in anywhere of subtree "article 2" and =M-x org2nikola-export-subtree=. That's it.
+Put focus in inside of subtree "article 2" and =M-x org2nikola-export-subtree=. That's it.
 
-Org2nikola output files into "~/.config/nikola". You need run =cd ~/.config/nikola;nikola build= to render website.
+Org2nikola output files into "~/.config/nikola". You need run =cd ~/.config/nikola && nikola build= to render website.
 
-Please note =M-x org2nikola-export-subtree=only creates HTML file for current node. You may need =M-x org2nikola-rerender-published-posts= at least once to re-create HTML files for old posts before "nikola build".
+You need run =M-x org2nikola-rerender-published-posts= once when you switch computer to publish blog.
 ** Upload HTML (OPTIONAL)
 You can always upload HTML files *manually* to the web server. Org2nikola provides `org2nikola-after-hook` for automation.
-*** Github Pages
+*** GitHub Pages
 Here is the sample setup:
 #+begin_src elisp
 (defun org2nikola-after-hook-setup (title slug)
@@ -69,7 +69,7 @@ Here is the setup:
 (defun org2nikola-after-hook-setup (title slug)
   (let ((url (concat "http://blog.yourdomain.net/posts/" slug ".html"))
         (nikola-dir (file-truename "~/.config/nikola"))
-        (password "yourpassowrd")
+        (password "yourpassword")
         (username "yourusername")
         dir
         file
@@ -104,13 +104,13 @@ It's standard org-mode feature. Press =C-c C-c= or =M-x org-ctrl-c-ctrl-c=.
 Please provide the directory containing org files if it's not set in `org2nikola-org-blog-directory`.
 
 * Nikola setup
-Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py][conf.py]]. [[http://www.google.com.au/analytics/][Google Analytics]] and [[https://highlightjs.org/][hightlight.js (sytnax highlight JS library)]] is used.
+Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py][conf.py]]. [[http://www.google.com.au/analytics/][Google Analytics]] and [[https://highlightjs.org/][hightlight.js (syntax highlight JS library)]] is used.
 
 If you are a newbie of Nikola or you need import post from wordpress, check [[http://blog.binchen.org/posts/migrate-blog-from-wordpress-into-nikola.html][this guide]].
 
 You may `(setq org2nikola-use-verbose-metadata t)` because more verbose meta data format is suggested by nikola 7.7+.
 * Credits
-- [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]] I borrow lots of ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
+- [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]]) I borrow many ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
 
 * Bug report
 [[https://github.com/redguardtoo/org2nikola]]
