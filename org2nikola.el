@@ -521,24 +521,15 @@
     str)
 
 (defun org2nikola-export-into-html-text ()
-  (let* (html-text b e)
-    (save-excursion
-      (org-mark-element)
-      (forward-line) ;; donot export title
-      (setq b (region-beginning))
-      (setq e (region-end)))
-
+  (let* (html-text)
     ;; org-export-as will detect active region and narrow to the region
-    (save-excursion
-      (setq html-text
-            (cond
-             ((version-list-< (version-to-list (org-version)) '(8 0 0))
-              (if (fboundp 'org-export-region-as-html)
-                  (org-export-region-as-html b e t 'string)))
-             (t
-              (if (fboundp 'org-export-as)
-                  (org-export-as 'html t nil t)))
-             )))
+    (setq html-text
+	  (save-excursion
+	    (org-mark-element)
+	    (forward-line)
+	    (search-forward-regexp "^[^:]")
+	    (backward-char)
+	    (org-export-as 'html t nil t)))
     html-text))
 
 (defun org2nikola-fix-unsupported-language (lang)
