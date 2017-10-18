@@ -521,24 +521,27 @@
     str)
 
 (defun org2nikola-export-into-html-text ()
-  (let* (html-text b e)
-    (save-excursion
-      (org-mark-element)
-      (forward-line) ;; donot export title
-      (setq b (region-beginning))
-      (setq e (region-end)))
+  (let* ((html-text)
+	 (b)
+	 (e))
 
     ;; org-export-as will detect active region and narrow to the region
-    (save-excursion
-      (setq html-text
-            (cond
+    (setq html-text
+	  (save-excursion
+	    (org-mark-element)
+	    (forward-line) ;; do not export title
+	    (search-forward-regexp "^[^:]")
+	    (backward-char)
+	    (setq b (region-beginning))
+	    (setq e (region-end))
+
+	    (cond
              ((version-list-< (version-to-list (org-version)) '(8 0 0))
               (if (fboundp 'org-export-region-as-html)
                   (org-export-region-as-html b e t 'string)))
-             (t
+	     (t
               (if (fboundp 'org-export-as)
-                  (org-export-as 'html t nil t)))
-             )))
+		  (org-export-as 'html t nil t))))))
     html-text))
 
 (defun org2nikola-fix-unsupported-language (lang)
@@ -675,22 +678,35 @@ Shamelessly copied from org2blog/wp-replace-pre()."
 (defun org2nikola--render-subtree (&optional donot-publish)
   "Render current subtree."
   (let* ((org-directory default-directory)
-         html-file
-         ;; set title and tags
-         (title (nth 4 (org-heading-components)))
-         (tags (mapcar 'org-no-properties (org-get-tags-at (point) nil)))
-         (post-slug (org2nikola--existing-slug))
-         (meta-file (concat (file-name-as-directory (org2nikola-guess-output-html-directory))
-                            post-slug
-                            ".meta"))
-         (html-file (concat (file-name-as-directory (org2nikola-guess-output-html-directory))
-                            post-slug
-                            ".wp"))
-         ;; set POST_DATE if it does not exist
-         (post-date (org-entry-get (point) "POST_DATE"))
-         ;; set UPDATE_DATE always! Use full ISO 8601 format
-         (update-date (org2nikola-format-time-string))
-         html-text)
+	 (html-file)
+	 (meta-file)
+	 (html-text)
+	 (post-date)
+	 (update-date)
+	 ;; (post-date)
+	 ;; set title and tags
+	 (title (nth 4 (org-heading-components)))
+	 (tags (mapcar 'org-no-properties (org-get-tags-at (point) nil)))
+	 (post-slug (org2nikola--existing-slug)))
+
+    ;; set POST_SLUG if its does not exist
+    (unless post-slug
+      (setq post-slug (org2nikola-get-slug title))
+      (org-entry-put (point) "POST_SLUG" post-slug))
+
+    (setq meta-file (concat (file-name-as-directory (org2nikola-guess-output-html-directory))
+			    post-slug
+			    ".meta"))
+
+    (setq html-file (concat (file-name-as-directory (org2nikola-guess-output-html-directory))
+			    post-slug
+			    ".wp"))
+
+    ;; set POST_DATE if it does not exist
+    (setq post-date (org-entry-get (point) "POST_DATE"))
+    ;; set UPDATE_DATE always! Use full ISO 8601 format
+    (setq update-date (org2nikola-format-time-string))
+
     (unless (and post-date (< 8 (length post-date)))
       ;; full ISO 8601 format
       (setq post-date (org2nikola-format-time-string))
@@ -698,26 +714,21 @@ Shamelessly copied from org2blog/wp-replace-pre()."
 
     (org-entry-put (point) "UPDATE_DATE" update-date)
 
-    ;; set POST_SLUG if its does not exist
-    (unless post-slug
-      (setq post-slug (org2nikola-get-slug title))
-      (org-entry-put (point) "POST_SLUG" post-slug))
-
     ;; meta file
     (with-temp-file meta-file
       (insert (format (if org2nikola-use-verbose-metadata ".. title: %s\n.. slug: %s\n.. date: %s\n.. tags: %s"
-                        "%s\n%s\n%s\n%s")
-                      title
-                      post-slug
-                      post-date
-                      (mapconcat 'identity tags ","))))
+			 "%s\n%s\n%s\n%s")
+		      title
+		      post-slug
+		      post-date
+		      (mapconcat 'identity tags ","))))
 
     ;; html file
     (setq html-text (org2nikola-export-into-html-text))
 
     (when org2nikola-code-prettify-type
       (save-excursion
-        (setq html-text (org2nikola-replace-pre html-text))))
+	(setq html-text (org2nikola-replace-pre html-text))))
 
     ;; post content should NOT contain title
     (setq html-text (replace-regexp-in-string "<h2  *id=\"sec-1\">.*<\/h2>" "" html-text))
