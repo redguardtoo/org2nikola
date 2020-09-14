@@ -1,5 +1,5 @@
-* org2nikola (v0.2.0)
-Export org into HTML used by static blog generator [[https://github.com/getnikola/nikola][nikola]].
+* org2nikola
+Convert Org into HTML used by static blog generator [[https://github.com/getnikola/nikola][nikola]].
 
 Features:
 - URL is normalized into pinyin if article title is Chinese
@@ -10,7 +10,7 @@ Features:
 
 Screenshot:
 [[https://raw.githubusercontent.com/redguardtoo/org2nikola/master/screenshots/org2nikola-demo-nq8.png]]
-  
+
 * Install
 Download org2nikola.el and put it somewhere, say "~/.emacs.d/lisp/nikola".
 
@@ -37,78 +37,77 @@ Put focus in inside of subtree "article 2" and =M-x org2nikola-export-subtree=. 
 Org2nikola output files into "~/.config/nikola". You need run =cd ~/.config/nikola && nikola build= to render website.
 
 You need run =M-x org2nikola-rerender-published-posts= once when you switch computer to publish blog.
-** Upload HTML (OPTIONAL)
-You can always upload HTML files *manually* to the web server. Org2nikola provides `org2nikola-after-hook` for automation.
-*** GitHub Pages
-Here is the sample setup:
-#+begin_src elisp
-(defun org2nikola-after-hook-setup (title slug)
-  "see https://help.github.com/articles/setting-up-a-custom-domain-with-github-pages/ for setup
- run `ln -s ~/projs/redguardtoo.github.io ~/.config/nikola/output`, btw"
-  (let ((url (concat "http://blog.binchen.org/posts/" slug ".html"))
-        (nikola-dir (file-truename "~/.config/nikola"))
-        cmd)
-    ;; copy the blog url into kill-ring
-    (kill-new url)
-    (message "%s => kill-ring" url)
-    ;; nikola is building posts ...
-    (shell-command (format "cd %s; nikola build" nikola-dir))
-    (setq cmd "cd ~/projs/redguardtoo.github.io;git add .;git commit -m 'updated';git push origin master;git push gitcafe gitcafe-pages:refs/heads/master")
-    (shell-command cmd)
-    ))
-
-(add-hook 'org2nikola-after-hook 'org2nikola-after-hook-setup)
-#+end_src
-
-Please note:
-- My user name at github is "redguardtoo" and my blog domain is "blog.binchen.org". You need replace them with your own stuff.
-- Gitcafe is a different repository as the backup. You can remove it.
-*** FTP
-Here is the setup:
-#+begin_src elisp
-(defun org2nikola-after-hook-setup (title slug)
-  (let ((url (concat "http://blog.yourdomain.net/posts/" slug ".html"))
-        (nikola-dir (file-truename "~/.config/nikola"))
-        (password "yourpassword")
-        (username "yourusername")
-        dir
-        file
-        lines
-        rlt
-        res
-        cmd)
-    (kill-new url)
-    (message "%s => kill-ring" url)
-    (setq rlt (shell-command-to-string (format "cd %s; nikola build" nikola-dir)))
-    (setq lines (split-string rlt "\n"))
-    (dolist (l lines)
-      (when (string-match "output\\(.*/\\)*\\([^/]*\\)$" l)
-        (setq dir (match-string 1 l))
-        (setq file (match-string 2 l))
-        (setq cmd (format "ncftpput -b -u %s -p %s ftp.yourdomain.net /blog%s %s/output%s%s"
-                          username password dir nikola-dir dir file))
-        (shell-command cmd)
-        ))
-    ))
-
-(add-hook 'org2nikola-after-hook 'org2nikola-after-hook-setup)
-#+end_src
-
-You need install [[http://www.ncftp.com/][ncftp]] which is the FTP client. See [[http://blog.binchen.org/posts/how-to-publish-static-html-blog-in-emacs-as-a-programmer.html][How a programmer publish static HTML blog in Emacs]] for details.
-    
 ** Tag the post
-It's standard org-mode feature. Press =C-c C-c= or =M-x org-ctrl-c-ctrl-c=.
+It's =org-mode= feature. Press =C-c C-c= or =M-x org-ctrl-c-ctrl-c=.
 ** Re-render all published posts
-`M-x org2nikola-rerender-published-posts`.
+Run =M-x org2nikola-rerender-published-posts=.
 
-Please provide the directory containing org files if it's not set in `org2nikola-org-blog-directory`.
+Please provide the directory containing org files if it's not set in =org2nikola-org-blog-directory=.
 
 * Nikola setup
 Check my [[https://gist.github.com/redguardtoo/d6ded55e050343b4629b#file-conf-py][conf.py]]. [[http://www.google.com.au/analytics/][Google Analytics]] and [[https://highlightjs.org/][hightlight.js (syntax highlight JS library)]] is used.
 
 If you are a newbie of Nikola or you need import post from wordpress, check [[http://blog.binchen.org/posts/migrate-blog-from-wordpress-into-nikola.html][this guide]].
 
-You may `(setq org2nikola-use-verbose-metadata t)` because more verbose meta data format is suggested by nikola 7.7+.
+You may =(setq org2nikola-use-verbose-metadata t)= because more verbose meta data format is suggested by nikola 7.7+.
+* Tips
+** Customize html output
+You can use =org2nikola-process-output-html-function= to customize the html,
+#+begin_src elisp
+(defun my-customize-post-content (html title post-slug)
+  (ignore title post-slug)
+  html)
+(setq org2nikola-process-output-html-function 'my-customize-post-content)
+#+end_src
+** Upload HTML (OPTIONAL)
+You can always upload HTML files *manually* to the web server. Org2nikola provides =org2nikola-after-hook= for automation.
+*** GitHub Pages
+Here is the sample setup:
+#+begin_src elisp
+(defun org2nikola-after-hook-setup (title slug)
+  "see https://help.github.com/articles/setting-up-a-custom-domain-with-github-pages/ for setup
+ run `ln -s ~/projs/redguardtoo.github.io ~/.config/nikola/output`, btw"
+  (let* ((url (concat "http://blog.binchen.org/posts/" slug ".html"))
+         (nikola-dir (file-truename "~/.config/nikola"))
+         (cmd "cd ~/projs/redguardtoo.github.io && git add . && git commit -m updated && git push origin master"))
+    ;; copy the blog url into kill-ring
+    (kill-new url)
+    (message "%s => kill-ring" url)
+    ;; nikola is building posts ...
+    (shell-command (format "cd %s; nikola build" nikola-dir))
+    (shell-command cmd)))
+
+(add-hook 'org2nikola-after-hook 'org2nikola-after-hook-setup)
+#+end_src
+
+Please note my user name at github is "redguardtoo" and my blog domain is "blog.binchen.org". You need replace them with your own stuff.
+*** FTP
+Here is the setup:
+#+begin_src elisp
+(defun org2nikola-after-hook-setup (title slug)
+  (let* ((url (concat "http://blog.yourdomain.net/posts/" slug ".html"))
+         (nikola-dir (file-truename "~/.config/nikola"))
+         (lines (split-string (shell-command-to-string (format "cd %s; nikola build" nikola-dir)) "\n")))
+    (kill-new url)
+    (message "%s => kill-ring" url)
+    (dolist (l lines)
+      (when (string-match "output\\(.*/\\)*\\([^/]*\\)$" l)
+        (let* ((dir (match-string 1 l))
+               (file (match-string 2 l))
+               (cmd (format "ncftpput -b -u %s -p %s ftp.yourdomain.net /blog%s %s/output%s%s"
+                            "yourusername"
+                            "yourpassword"
+                            dir
+                            nikola-dir
+                            dir
+                            file)))
+          (shell-command cmd))))))
+
+(add-hook 'org2nikola-after-hook 'org2nikola-after-hook-setup)
+#+end_src
+
+You need install [[http://www.ncftp.com/][ncftp]] which is the FTP client. See [[http://blog.binchen.org/posts/how-to-publish-static-html-blog-in-emacs-as-a-programmer.html][How a programmer publish static HTML blog in Emacs]] for details.
+
 * Credits
 - [[https://github.com/punchagan/][Puneeth Chaganti (AKA punchagan]]) I borrow many ideas from his project [[https://github.com/punchagan/org2blog][org2blog]].
 
